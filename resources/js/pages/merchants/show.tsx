@@ -163,7 +163,14 @@ export default function MerchantShow({
                                     label="Tipo"
                                     value={m.commerce_type_label}
                                 />
-                                <Row label="Tianguis" value={m.tianguis} />
+                                <Row
+                                    label="Tianguis"
+                                    value={
+                                        (m.tianguis_list ?? [])
+                                            .map((t) => t.name)
+                                            .join(', ') || m.tianguis
+                                    }
+                                />
                                 <Row label="Ruta" value={m.route} />
                                 <Row
                                     label="Metros"

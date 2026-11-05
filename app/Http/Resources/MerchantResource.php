@@ -39,6 +39,8 @@ class MerchantResource extends JsonResource
             'route' => $this->whenLoaded('route', fn () => $this->route?->name),
             'tianguis_id' => $this->tianguis_id,
             'tianguis' => $this->whenLoaded('tianguis', fn () => $this->tianguis?->name),
+            // Todos los tianguis donde opera (para elegir en cuál se cobran los boletos).
+            'tianguis_list' => $this->whenLoaded('allTianguis', fn () => $this->allTianguis->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values()),
             'meters' => $this->meters,
             'commerce_type' => $this->commerce_type->value,
             'commerce_type_label' => $this->commerce_type->label(),

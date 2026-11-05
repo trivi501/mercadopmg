@@ -7,6 +7,7 @@ import { FilterSelect, toItems } from '@/components/padron/filter-select';
 import { LocationPicker } from '@/components/padron/location-picker';
 import { PageBody, PageHeader } from '@/components/padron/page-header';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -59,6 +60,7 @@ export default function MerchantForm({ merchant: raw, options }: Props) {
         longitude: merchant?.longitude ?? '',
         commerce_type: merchant?.commerce_type ?? 'tianguis',
         tianguis_id: merchant?.tianguis_id ? String(merchant.tianguis_id) : '',
+        tianguis_ids: (merchant?.tianguis_list ?? []).map((t) => String(t.id)),
         route_id: merchant?.route_id ? String(merchant.route_id) : '',
         meters: merchant?.meters ? String(Number(merchant.meters)) : '',
         meters_reason: '',
@@ -296,23 +298,91 @@ export default function MerchantForm({ merchant: raw, options }: Props) {
                                     />
                                 </Field>
                                 <Field
-                                    label="Tianguis"
-                                    htmlFor="tianguis_id"
-                                    error={errors.tianguis_id}
+                                    label="Tianguis donde opera"
+                                    error={
+                                        errors.tianguis_ids ??
+                                        errors.tianguis_id
+                                    }
                                     required={data.commerce_type === 'tianguis'}
+                                    hint="Puede operar en varios tianguis (distintos días)."
                                 >
-                                    <FilterSelect
-                                        id="tianguis_id"
-                                        value={data.tianguis_id}
-                                        onChange={(v) =>
-                                            setData('tianguis_id', v)
-                                        }
-                                        items={toItems(options.tianguis)}
-                                        placeholder="Ninguno"
-                                        allLabel="Ninguno"
-                                        className="sm:w-full"
-                                    />
+                                    <div className="grid max-h-56 gap-1.5 overflow-y-auto rounded-md border p-2">
+                                        {options.tianguis.map((t) => {
+                                            const id = String(t.id);
+
+                                            return (
+                                                <label
+                                                    key={t.id}
+                                                    className="flex items-center gap-2 text-sm"
+                                                >
+                                                    <Checkbox
+                                                        checked={data.tianguis_ids.includes(
+                                                            id,
+                                                        )}
+                                                        onCheckedChange={(v) =>
+                                                            setData((d) => {
+                                                                const ids = v
+                                                                    ? [
+                                                                          ...d.tianguis_ids,
+                                                                          id,
+                                                                      ]
+                                                                    : d.tianguis_ids.filter(
+                                                                          (x) =>
+                                                                              x !==
+                                                                              id,
+                                                                      );
+                                                                const principal =
+                                                                    ids.includes(
+                                                                        d.tianguis_id,
+                                                                    )
+                                                                        ? d.tianguis_id
+                                                                        : (ids[0] ??
+                                                                          '');
+
+                                                                return {
+                                                                    ...d,
+                                                                    tianguis_ids:
+                                                                        ids,
+                                                                    tianguis_id:
+                                                                        principal,
+                                                                };
+                                                            })
+                                                        }
+                                                    />
+                                                    {t.name}
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
                                 </Field>
+                                {data.tianguis_ids.length > 1 && (
+                                    <Field
+                                        label="Tianguis principal"
+                                        htmlFor="tianguis_id"
+                                        error={errors.tianguis_id}
+                                    >
+                                        <FilterSelect
+                                            id="tianguis_id"
+                                            value={data.tianguis_id}
+                                            onChange={(v) =>
+                                                setData('tianguis_id', v)
+                                            }
+                                            items={options.tianguis
+                                                .filter((t) =>
+                                                    data.tianguis_ids.includes(
+                                                        String(t.id),
+                                                    ),
+                                                )
+                                                .map((t) => ({
+                                                    value: t.id,
+                                                    label: t.name,
+                                                }))}
+                                            placeholder="Principal"
+                                            allowAll={false}
+                                            className="sm:w-full"
+                                        />
+                                    </Field>
+                                )}
                                 <Field
                                     label="Ruta"
                                     htmlFor="route_id"

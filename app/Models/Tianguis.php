@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -50,11 +50,13 @@ class Tianguis extends Model
     }
 
     /**
-     * @return HasMany<Merchant, $this>
+     * Comerciantes que operan en este tianguis (principal o adicional).
+     *
+     * @return BelongsToMany<Merchant, $this>
      */
-    public function merchants(): HasMany
+    public function merchants(): BelongsToMany
     {
-        return $this->hasMany(Merchant::class);
+        return $this->belongsToMany(Merchant::class, 'merchant_tianguis')->withTimestamps();
     }
 
     /**

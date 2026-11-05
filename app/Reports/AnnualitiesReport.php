@@ -48,7 +48,7 @@ class AnnualitiesReport extends Report
         return Annuality::query()
             ->where('fiscal_year', $this->year())
             ->when($this->filter('status'), fn ($q, $v) => $q->where('annualities.status', $v))
-            ->when($this->filter('tianguis_id'), fn ($q, $v) => $q->whereHas('merchant', fn ($m) => $m->where('tianguis_id', $v)))
+            ->when($this->filter('tianguis_id'), fn ($q, $v) => $q->whereHas('merchant', fn ($m) => $m->inTianguis($v)))
             ->when($this->filter('route_id'), fn ($q, $v) => $q->whereHas('merchant', fn ($m) => $m->where('route_id', $v)));
     }
 

@@ -103,6 +103,7 @@ fun MerchantDto.toEntity() = MerchantEntity(
     location = location,
     tianguisId = tianguisId,
     tianguis = tianguis,
+    tianguisList = tianguisList.joinToString("|") { "${it.id}:${it.name.replace("|", " ").replace(":", " ")}" },
     route = route,
     meters = meters,
     commerceTypeLabel = commerceTypeLabel,

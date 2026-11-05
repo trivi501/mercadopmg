@@ -45,6 +45,16 @@ class MerchantFactory extends Factory
         ];
     }
 
+    public function configure(): static
+    {
+        // Igual que MerchantService: el tianguis principal forma parte de la lista.
+        return $this->afterCreating(function (Merchant $merchant) {
+            if ($merchant->tianguis_id) {
+                $merchant->allTianguis()->syncWithoutDetaching([$merchant->tianguis_id]);
+            }
+        });
+    }
+
     public function inactive(): static
     {
         return $this->state(['status' => MerchantStatus::Inactive]);

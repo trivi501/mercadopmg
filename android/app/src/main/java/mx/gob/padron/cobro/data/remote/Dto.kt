@@ -100,6 +100,8 @@ data class MerchantDto(
     val location: String? = null,
     @SerialName("tianguis_id") val tianguisId: Int? = null,
     val tianguis: String? = null,
+    /** Todos los tianguis donde opera (el principal incluido). */
+    @SerialName("tianguis_list") val tianguisList: List<NamedDto> = emptyList(),
     val route: String? = null,
     val meters: String = "0",
     @SerialName("commerce_type_label") val commerceTypeLabel: String = "",
@@ -144,6 +146,8 @@ data class ChargeItem(
     @SerialName("concept_id") val conceptId: Int,
     val quantity: Int? = null,
     @SerialName("fiscal_year") val fiscalYear: Int? = null,
+    /** Tianguis donde se cobran los boletos (si el comerciante opera en varios). */
+    @SerialName("tianguis_id") val tianguisId: Int? = null,
 )
 
 @Serializable

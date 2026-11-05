@@ -29,7 +29,12 @@ type Props = {
     cashSession: { id: number; folio: string; opened_at_label: string } | null;
 };
 
-type Line = { concept_id: number; quantity: number; fiscal_year?: number };
+type Line = {
+    concept_id: number;
+    quantity: number;
+    fiscal_year?: number;
+    tianguis_id?: number;
+};
 
 export default function ChargeCreate({
     merchant: wrapped,
@@ -53,6 +58,11 @@ export default function ChargeCreate({
             .map((a) => a.fiscal_year) ?? [];
 
     const [tickets, setTickets] = useState(1);
+    // Tianguis donde se cobran los boletos (si opera en varios).
+    const merchantTianguis = merchant?.tianguis_list ?? [];
+    const [ticketTianguis, setTicketTianguis] = useState<number | null>(
+        merchant?.tianguis_id ?? merchantTianguis[0]?.id ?? null,
+    );
     const [annualityYear, setAnnualityYear] = useState<number | null>(null);
     const [extras, setExtras] = useState<Record<number, number>>({});
 
@@ -87,10 +97,12 @@ export default function ChargeCreate({
         const list: (Line & { label: string; unit: number })[] = [];
 
         if (ticket && tickets > 0) {
+            const place = merchantTianguis.find((t) => t.id === ticketTianguis);
             list.push({
                 concept_id: ticket.id,
                 quantity: tickets,
-                label: `${ticket.name} × ${tickets}`,
+                tianguis_id: ticketTianguis ?? undefined,
+                label: `${ticket.name} × ${tickets}${merchantTianguis.length > 1 && place ? ` · ${place.name}` : ''}`,
                 unit: Number(ticket.amount),
             });
         }
@@ -120,7 +132,17 @@ export default function ChargeCreate({
         }
 
         return list;
-    }, [ticket, tickets, annuality, annualityYear, others, extras, account]);
+    }, [
+        ticket,
+        tickets,
+        ticketTianguis,
+        merchantTianguis,
+        annuality,
+        annualityYear,
+        others,
+        extras,
+        account,
+    ]);
 
     const total = lines.reduce((sum, l) => sum + l.unit * l.quantity, 0);
 
@@ -129,11 +151,14 @@ export default function ChargeCreate({
         form.transform((d) => ({
             ...d,
             merchant_id: merchant?.id,
-            items: lines.map(({ concept_id, quantity, fiscal_year }) => ({
-                concept_id,
-                quantity,
-                fiscal_year,
-            })),
+            items: lines.map(
+                ({ concept_id, quantity, fiscal_year, tianguis_id }) => ({
+                    concept_id,
+                    quantity,
+                    fiscal_year,
+                    tianguis_id,
+                }),
+            ),
         }));
         form.post(store().url);
     };
@@ -347,6 +372,30 @@ export default function ChargeCreate({
                                                 )}
                                             </span>
                                         </div>
+                                        {merchantTianguis.length > 1 && (
+                                            <div className="grid w-full gap-1.5">
+                                                <Label>
+                                                    Tianguis donde se cobran
+                                                </Label>
+                                                <FilterSelect
+                                                    value={ticketTianguis}
+                                                    onChange={(v) =>
+                                                        setTicketTianguis(
+                                                            Number(v),
+                                                        )
+                                                    }
+                                                    items={merchantTianguis.map(
+                                                        (t) => ({
+                                                            value: t.id,
+                                                            label: t.name,
+                                                        }),
+                                                    )}
+                                                    placeholder="Tianguis"
+                                                    allowAll={false}
+                                                    className="sm:w-72"
+                                                />
+                                            </div>
+                                        )}
                                         <div className="flex flex-wrap gap-1">
                                             {[1, 2, 3, 4, 5, 10].map((n) => (
                                                 <Button

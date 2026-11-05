@@ -155,7 +155,7 @@ fun MerchantScreen(
                             InfoRow("Folio", m.folio)
                             InfoRow("Giro", listOfNotNull(m.businessType, m.businessDescription).joinToString(" · "))
                             InfoRow("Tipo", m.commerceTypeLabel)
-                            InfoRow("Tianguis", m.tianguis)
+                            InfoRow("Tianguis", m.tianguisOptions().joinToString(", ") { it.second }.ifBlank { m.tianguis.orEmpty() })
                             InfoRow("Ruta", m.route)
                             InfoRow("Ubicación", m.location)
                             InfoRow("Metros", "${Money.parse(m.meters).stripTrailingZeros().toPlainString()} m")

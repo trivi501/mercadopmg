@@ -113,7 +113,8 @@ class PaymentService
             'folio' => $this->folios->next(FolioGenerator::RECEIPT),
             'merchant_id' => $merchant->id,
             'user_id' => $user->id,
-            'tianguis_id' => $lines[0]['tianguis_id'] ?? $merchant->tianguis_id,
+            // El recibo se asocia al tianguis donde se cobraron los boletos.
+            'tianguis_id' => collect($lines)->first(fn ($l) => $l['concept']->type === ConceptType::Ticket)['tianguis_id'] ?? $merchant->tianguis_id,
             'route_id' => $merchant->route_id,
             'issued_at' => $issuedAt,
             'subtotal' => $total,
@@ -201,6 +202,7 @@ class PaymentService
 
         $lines = [];
         $seenAnnualities = [];
+        $merchantTianguis = $merchant->allTianguis()->pluck('tianguis.id')->map(fn ($id) => (int) $id)->all();
 
         foreach ($items as $i => $item) {
             $concept = Concept::query()->find((int) $item['concept_id']);
@@ -234,6 +236,11 @@ class PaymentService
                 $unitPrice = $concept->amount;
             }
 
+            $ticketTianguis = isset($item['tianguis_id']) ? (int) $item['tianguis_id'] : $merchant->tianguis_id;
+            if ($concept->type === ConceptType::Ticket && isset($item['tianguis_id']) && ! in_array($ticketTianguis, $merchantTianguis, true)) {
+                throw new BusinessRuleException("El comerciante {$merchant->folio} no está registrado en ese tianguis.", 'tianguis_not_assigned', "items.$i.tianguis_id");
+            }
+
             $lines[] = [
                 'concept' => $concept,
                 'quantity' => $quantity,
@@ -242,7 +249,7 @@ class PaymentService
                 'description' => $description,
                 'fiscal_year' => $fiscalYear,
                 'service_date' => $concept->type === ConceptType::Ticket ? ($item['service_date'] ?? $issuedAt->toDateString()) : null,
-                'tianguis_id' => $concept->type === ConceptType::Ticket ? ($item['tianguis_id'] ?? $merchant->tianguis_id) : $merchant->tianguis_id,
+                'tianguis_id' => $concept->type === ConceptType::Ticket ? $ticketTianguis : $merchant->tianguis_id,
                 'annuality' => $annuality,
             ];
         }

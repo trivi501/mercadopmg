@@ -42,11 +42,11 @@ class MerchantsReport extends Report
     public function query(): Builder
     {
         return Merchant::query()
-            ->with(['businessType:id,name', 'tianguis:id,name', 'route:id,name'])
+            ->with(['businessType:id,name', 'tianguis:id,name', 'route:id,name', 'allTianguis:id,name'])
             ->search($this->filter('search'))
             ->when($this->filter('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($this->filter('business_type_id'), fn ($q, $v) => $q->where('business_type_id', $v))
-            ->when($this->filter('tianguis_id'), fn ($q, $v) => $q->where('tianguis_id', $v))
+            ->when($this->filter('tianguis_id'), fn ($q, $v) => $q->inTianguis($v))
             ->when($this->filter('route_id'), fn ($q, $v) => $q->where('route_id', $v))
             ->when($this->filter('commerce_type'), fn ($q, $v) => $q->where('commerce_type', $v))
             ->orderBy('folio');
@@ -61,7 +61,7 @@ class MerchantsReport extends Report
             'trade_name' => $model->trade_name,
             'business_type' => $model->businessType->name,
             'commerce_type' => $model->commerce_type->label(),
-            'tianguis' => $model->tianguis?->name,
+            'tianguis' => $model->allTianguis->pluck('name')->implode(', ') ?: $model->tianguis?->name,
             'route' => $model->route?->name,
             'meters' => $model->meters,
             'phone' => $model->phone,

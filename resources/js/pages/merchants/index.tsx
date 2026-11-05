@@ -219,10 +219,22 @@ export default function MerchantsIndex({
                                     <TableCell>
                                         {m.commerce_type_label}
                                     </TableCell>
-                                    <TableCell className="max-w-48 truncate">
+                                    <TableCell
+                                        className="max-w-48 truncate"
+                                        title={(m.tianguis_list ?? [])
+                                            .map((t) => t.name)
+                                            .join(', ')}
+                                    >
                                         {[m.tianguis, m.route]
                                             .filter(Boolean)
                                             .join(' · ') || '—'}
+                                        {(m.tianguis_list?.length ?? 0) > 1 && (
+                                            <span className="ml-1 text-xs text-muted-foreground">
+                                                +
+                                                {(m.tianguis_list?.length ??
+                                                    1) - 1}
+                                            </span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right tabular-nums">
                                         {Number(m.meters)}

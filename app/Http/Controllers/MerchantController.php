@@ -83,7 +83,7 @@ class MerchantController extends Controller
         $this->authorize('view', $merchant);
         $this->audit->log(AuditAction::View, 'Padrón', $merchant, null, null, "Consulta del comerciante {$merchant->folio}");
 
-        $merchant->load(['businessType', 'tianguis', 'route', 'measurements.user:id,name', 'creator:id,name']);
+        $merchant->load(['businessType', 'tianguis', 'route', 'allTianguis:id,name', 'measurements.user:id,name', 'creator:id,name']);
         $user = $request->user();
 
         return Inertia::render('merchants/show', [
@@ -114,7 +114,7 @@ class MerchantController extends Controller
         $this->authorize('update', $merchant);
 
         return Inertia::render('merchants/form', [
-            'merchant' => new MerchantResource($merchant),
+            'merchant' => new MerchantResource($merchant->load('allTianguis:id,name')),
             'options' => Options::for(['business_types', 'tianguis', 'routes', 'commerce_types', 'merchant_statuses']),
         ]);
     }
@@ -173,7 +173,7 @@ class MerchantController extends Controller
             ? $this->merchants->nearby((float) $validated['lat'], (float) $validated['lng'], (float) ($validated['radius'] ?? 0.5), 1000)
             : Merchant::query()
                 ->whereNotNull('latitude')
-                ->when($validated['tianguis_id'] ?? null, fn ($q, $v) => $q->where('tianguis_id', $v))
+                ->when($validated['tianguis_id'] ?? null, fn ($q, $v) => $q->inTianguis($v))
                 ->when($validated['route_id'] ?? null, fn ($q, $v) => $q->where('route_id', $v))
                 ->with(['businessType:id,name', 'tianguis:id,name', 'route:id,name'])
                 ->limit(2000)

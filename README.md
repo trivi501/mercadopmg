@@ -84,6 +84,21 @@ Guía paso a paso para **https://mercados.gpe.gob.mx** (Ubuntu + Nginx + PHP-FPM
 
 6. Respalde la base de datos diariamente; recibos, reimpresiones y auditoría no se eliminan nunca.
 
+## Importar el padrón desde Excel
+
+El Excel del padrón (una hoja por tianguis, ruta o plaza: N° · NOMBRE · GIRO · UBICACIÓN · ESPACIO) se importa con:
+
+```bash
+php artisan padron:importar-excel "PADRON ... 2026.xlsx"              # ensayo: no guarda nada
+php artisan padron:importar-excel "PADRON ... 2026.xlsx" --confirmar  # importa
+```
+
+- Genera un reporte `.xlsx` en `storage/app/importaciones/` con hojas _Resumen_, _Comerciantes_ (folio asignado, giro, tianguis, metros) y _Revisar_ (lo que requiere atención).
+- Une a la misma persona que aparece en varias hojas en un solo folio y le asigna todos los tianguis de la columna UBICACIÓN.
+- Agrupa los giros en el catálogo (`app/Services/Import/BusinessTypeClassifier.php`) y conserva el texto original en "descripción del giro".
+- Es reejecutable: correrlo dos veces no duplica comerciantes.
+- La correspondencia hoja → tianguis/ruta y los alias de lugares están en `app/Services/Import/PadronSheetMap.php`.
+
 ## Roles
 
 | Rol           | Puede                                                                                                         |

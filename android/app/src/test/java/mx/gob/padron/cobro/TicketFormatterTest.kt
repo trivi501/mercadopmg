@@ -12,7 +12,7 @@ class TicketFormatterTest {
     private val merchant = MerchantEntity(
         id = 1, uuid = "u", folio = "COM-000001", taxpayerName = "Juan Pérez López", tradeName = null,
         businessType = "Ropa", businessDescription = null, phone = null, location = null, tianguisId = 1,
-        tianguis = "Tianguis Municipal", route = "Ruta 01", meters = "3.00", commerceTypeLabel = "Tianguis",
+        tianguis = "Tianguis Municipal", tianguisList = "1:Tianguis Municipal|7:Las Américas", route = "Ruta 01", meters = "3.00", commerceTypeLabel = "Tianguis",
         status = "active", statusLabel = "Activo", searchText = "",
     )
 
@@ -48,6 +48,11 @@ class TicketFormatterTest {
         assertTrue(text.contains("COM-000001"))
         assertTrue(text.contains("$200.00 MXN"))
         assertTrue(text.contains("30/09/2026"))
+    }
+
+    @Test
+    fun `lee la lista de tianguis del comerciante`() {
+        assertEquals(listOf(1 to "Tianguis Municipal", 7 to "Las Américas"), merchant.tianguisOptions())
     }
 
     @Test

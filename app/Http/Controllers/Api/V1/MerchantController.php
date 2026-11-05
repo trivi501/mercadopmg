@@ -53,11 +53,11 @@ class MerchantController extends Controller
         }
 
         $query = Merchant::query()
-            ->with(['businessType:id,name', 'tianguis:id,name', 'route:id,name'])
+            ->with(['businessType:id,name', 'tianguis:id,name', 'route:id,name', 'allTianguis:id,name'])
             ->when($validated['folio'] ?? null, fn ($q, $v) => $q->where('folio', $v))
             ->search($validated['search'] ?? null)
             ->when($validated['business_type_id'] ?? null, fn ($q, $v) => $q->where('business_type_id', $v))
-            ->when($validated['tianguis_id'] ?? null, fn ($q, $v) => $q->where('tianguis_id', $v))
+            ->when($validated['tianguis_id'] ?? null, fn ($q, $v) => $q->inTianguis($v))
             ->when($validated['route_id'] ?? null, fn ($q, $v) => $q->where('route_id', $v))
             ->when($validated['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
             ->when($validated['updated_since'] ?? null, fn ($q, $v) => $q->where('updated_at', '>', Carbon::parse($v)))
@@ -80,7 +80,7 @@ class MerchantController extends Controller
         $this->authorize('view', $merchant);
         $this->audit->log(AuditAction::View, 'Padrón', $merchant, null, null, "Consulta del comerciante {$merchant->folio}");
 
-        return new MerchantResource($merchant->load(['businessType', 'tianguis', 'route', 'measurements.user:id,name']));
+        return new MerchantResource($merchant->load(['businessType', 'tianguis', 'route', 'allTianguis:id,name', 'measurements.user:id,name']));
     }
 
     /**

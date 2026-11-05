@@ -85,6 +85,8 @@ data class ChargeState(
     val ticketConcept: ConceptEntity? = null,
     val annualityConcept: ConceptEntity? = null,
     val tickets: Int = 1,
+    /** Tianguis donde se cobran los boletos. */
+    val ticketTianguisId: Int? = null,
     val annualityYear: Int? = null,
     val paymentMethod: String = "cash",
     val reference: String = "",
@@ -115,6 +117,11 @@ data class ChargeState(
         }
 
     val total: BigDecimal get() = Money.sum(lines.map { Money.parse(it.amount) })
+
+    val tianguisOptions: List<Pair<Int, String>> get() = merchant?.tianguisOptions().orEmpty()
+
+    val ticketTianguisName: String?
+        get() = tianguisOptions.firstOrNull { it.first == ticketTianguisId }?.second ?: merchant?.tianguis
 }
 
 sealed interface ChargeEvent {
@@ -152,10 +159,12 @@ class ChargeViewModel(
             val merchant = container.merchants.get(merchantId)
             val account = container.merchants.account(merchantId)
 
+            val loaded = (merchant as? ApiResult.Success)?.value
             _state.update {
                 it.copy(
                     loading = false,
-                    merchant = (merchant as? ApiResult.Success)?.value,
+                    merchant = loaded,
+                    ticketTianguisId = it.ticketTianguisId ?: loaded?.tianguisId ?: loaded?.tianguisOptions()?.firstOrNull()?.first,
                     account = (account as? ApiResult.Success)?.value,
                     offline = account is ApiResult.Offline,
                     ticketConcept = concepts.firstOrNull { c -> c.type == "ticket" },
@@ -169,6 +178,8 @@ class ChargeViewModel(
             }
         }
     }
+
+    fun setTicketTianguis(id: Int) = _state.update { it.copy(ticketTianguisId = id) }
 
     fun setTickets(n: Int) = _state.update { it.copy(tickets = n.coerceIn(0, MAX_TICKETS), error = null) }
     fun toggleAnnuality(year: Int) = _state.update { it.copy(annualityYear = if (it.annualityYear == year) null else year, error = null) }
@@ -187,7 +198,13 @@ class ChargeViewModel(
         }
 
         val items = buildList {
-            s.ticketConcept?.let { if (s.tickets > 0) add(ChargeItem(conceptId = it.id, quantity = s.tickets)) }
+            s.ticketConcept?.let {
+                if (s.tickets > 0) {
+                    // Sólo se envía si opera en varios; si no, el servidor usa el principal.
+                    val tianguis = s.ticketTianguisId.takeIf { s.tianguisOptions.size > 1 }
+                    add(ChargeItem(conceptId = it.id, quantity = s.tickets, tianguisId = tianguis))
+                }
+            }
             s.annualityConcept?.let { c -> s.annualityYear?.let { add(ChargeItem(conceptId = c.id, quantity = 1, fiscalYear = it)) } }
         }
         val request = ChargeRequest(
@@ -204,7 +221,8 @@ class ChargeViewModel(
         viewModelScope.launch {
             val outcome = container.charges.charge(
                 request = request,
-                merchant = merchant,
+                // El comprobante provisional muestra el tianguis elegido.
+                merchant = merchant.copy(tianguis = s.ticketTianguisName),
                 description = s.lines.joinToString(", ") { if (it.quantity > 1) "${it.concept} × ${it.quantity}" else it.concept },
                 total = Money.plain(s.total),
                 lines = s.lines,
@@ -329,6 +347,18 @@ fun ChargeScreen(
                                     )
                                     FilledTonalIconButton(onClick = { vm.setTickets(state.tickets + 1) }, modifier = Modifier.size(56.dp)) {
                                         Icon(Icons.Default.Add, contentDescription = "Más")
+                                    }
+                                }
+                                if (state.tianguisOptions.size > 1) {
+                                    Text("Tianguis donde se cobran", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 12.dp))
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        state.tianguisOptions.forEach { (id, name) ->
+                                            FilterChip(
+                                                selected = state.ticketTianguisId == id,
+                                                onClick = { vm.setTicketTianguis(id) },
+                                                label = { Text(name) },
+                                            )
+                                        }
                                     }
                                 }
                                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {

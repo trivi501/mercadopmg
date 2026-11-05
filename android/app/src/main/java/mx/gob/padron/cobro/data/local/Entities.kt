@@ -18,6 +18,8 @@ data class MerchantEntity(
     val location: String?,
     val tianguisId: Int?,
     val tianguis: String?,
+    /** Tianguis donde opera, serializados como "id:nombre|id:nombre". */
+    val tianguisList: String = "",
     val route: String?,
     val meters: String,
     val commerceTypeLabel: String,
@@ -25,7 +27,15 @@ data class MerchantEntity(
     val statusLabel: String,
     /** Texto normalizado (minúsculas, sin acentos) para la búsqueda local. */
     val searchText: String,
-)
+) {
+    /** Lista de (id, nombre) a partir de [tianguisList]. */
+    fun tianguisOptions(): List<Pair<Int, String>> = tianguisList
+        .split('|')
+        .mapNotNull { part ->
+            val id = part.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
+            id to part.substringAfter(':')
+        }
+}
 
 @Entity(tableName = "concepts")
 data class ConceptEntity(

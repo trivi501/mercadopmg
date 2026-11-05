@@ -27,7 +27,7 @@ class ChargeController extends Controller
         $this->authorize('create', Receipt::class);
 
         $merchant = $request->filled('merchant')
-            ? Merchant::query()->with(['businessType', 'tianguis', 'route'])->find($request->integer('merchant'))
+            ? Merchant::query()->with(['businessType', 'tianguis', 'route', 'allTianguis:id,name'])->find($request->integer('merchant'))
             : null;
 
         return Inertia::render('charges/create', [

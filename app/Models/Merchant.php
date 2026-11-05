@@ -10,9 +10,11 @@ use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -53,6 +55,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read BusinessType $businessType
  * @property-read Tianguis|null $tianguis
+ * @property-read Collection<int, Tianguis> $allTianguis
  * @property-read MarketRoute|null $route
  */
 #[Fillable([
@@ -97,6 +100,27 @@ class Merchant extends Model
     public function tianguis(): BelongsTo
     {
         return $this->belongsTo(Tianguis::class)->withTrashed();
+    }
+
+    /**
+     * Todos los tianguis en los que opera (incluye el principal `tianguis_id`).
+     *
+     * @return BelongsToMany<Tianguis, $this>
+     */
+    public function allTianguis(): BelongsToMany
+    {
+        return $this->belongsToMany(Tianguis::class, 'merchant_tianguis')->withTimestamps()->orderBy('name');
+    }
+
+    /**
+     * Comerciantes que operan en un tianguis (principal o adicional).
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inTianguis(Builder $query, int|string $tianguisId): void
+    {
+        $query->whereHas('allTianguis', fn (Builder $q) => $q->where('tianguis.id', $tianguisId));
     }
 
     /**

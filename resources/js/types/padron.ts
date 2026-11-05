@@ -56,6 +56,8 @@ export type Merchant = {
     route?: string | null;
     tianguis_id: number | null;
     tianguis?: string | null;
+    /** Todos los tianguis donde opera (el principal incluido). */
+    tianguis_list?: { id: number; name: string }[];
     meters: string;
     commerce_type: string;
     commerce_type_label: string;

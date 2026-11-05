@@ -20,6 +20,9 @@ class MerchantService
      * Registra un comerciante. Si llega un UUID ya registrado (reintento desde
      * la app sin conexión) se devuelve el comerciante existente.
      *
+     * `tianguis_ids` (opcional) son todos los tianguis donde opera; el primero
+     * se usa como principal si no se indica `tianguis_id`.
+     *
      * @param  array<string, mixed>  $data
      */
     public function create(array $data, User $user): Merchant
@@ -28,7 +31,9 @@ class MerchantService
             return $existing;
         }
 
-        return DB::transaction(function () use ($data, $user) {
+        [$data, $tianguisIds] = $this->extractTianguis($data);
+
+        return DB::transaction(function () use ($data, $user, $tianguisIds) {
             $merchant = Merchant::create([
                 ...$data,
                 'uuid' => $data['uuid'] ?? (string) Str::uuid(),
@@ -47,6 +52,8 @@ class MerchantService
                 'reason' => 'Alta en el padrón',
             ]);
 
+            $this->syncTianguis($merchant, $tianguisIds);
+
             if ($merchant->status === MerchantStatus::Active) {
                 $this->annualities->ensureForMerchant($merchant, (int) now()->year);
             }
@@ -63,7 +70,10 @@ class MerchantService
      */
     public function update(Merchant $merchant, array $data, User $user, ?string $metersReason = null): Merchant
     {
-        return DB::transaction(function () use ($merchant, $data, $user, $metersReason) {
+        $hasTianguis = array_key_exists('tianguis_ids', $data);
+        [$data, $tianguisIds] = $this->extractTianguis($data);
+
+        return DB::transaction(function () use ($merchant, $data, $user, $metersReason, $hasTianguis, $tianguisIds) {
             unset($data['uuid'], $data['folio']);
 
             $merchant->fill([...$data, 'updated_by' => $user->id]);
@@ -80,12 +90,54 @@ class MerchantService
                 ]);
             }
 
+            if ($hasTianguis || $merchant->wasChanged('tianguis_id')) {
+                $this->syncTianguis($merchant, $tianguisIds);
+            }
+
             if ($merchant->wasChanged('status') && $merchant->status === MerchantStatus::Active) {
                 $this->annualities->ensureForMerchant($merchant, (int) now()->year);
             }
 
             return $merchant;
         });
+    }
+
+    /**
+     * Separa `tianguis_ids` de los datos y define el principal si falta.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{0: array<string, mixed>, 1: list<int>|null}
+     */
+    private function extractTianguis(array $data): array
+    {
+        $ids = null;
+
+        if (array_key_exists('tianguis_ids', $data)) {
+            $ids = array_values(array_unique(array_map('intval', array_filter((array) $data['tianguis_ids']))));
+            unset($data['tianguis_ids']);
+
+            if (empty($data['tianguis_id']) && $ids !== []) {
+                $data['tianguis_id'] = $ids[0];
+            }
+        }
+
+        return [$data, $ids];
+    }
+
+    /**
+     * El tianguis principal siempre forma parte de la lista.
+     *
+     * @param  list<int>|null  $ids  null = conservar los adicionales actuales
+     */
+    private function syncTianguis(Merchant $merchant, ?array $ids): void
+    {
+        $ids ??= $merchant->allTianguis()->pluck('tianguis.id')->map(fn ($id) => (int) $id)->all();
+
+        if ($merchant->tianguis_id) {
+            $ids[] = $merchant->tianguis_id;
+        }
+
+        $merchant->allTianguis()->sync(array_values(array_unique($ids)));
     }
 
     /**
