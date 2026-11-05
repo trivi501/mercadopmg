@@ -1,9 +1,13 @@
 package mx.gob.padron.cobro.ui.login
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -13,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -33,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -46,6 +51,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mx.gob.padron.cobro.AppContainer
+import mx.gob.padron.cobro.R
 import mx.gob.padron.cobro.data.remote.ApiResult
 import mx.gob.padron.cobro.data.remote.errorMessage
 import mx.gob.padron.cobro.ui.common.containerViewModel
@@ -119,7 +125,14 @@ fun LoginScreen(container: AppContainer, onLoggedIn: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
-            Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
+            Image(
+                painter = painterResource(R.drawable.logo_guadalupe),
+                contentDescription = "Ayuntamiento de Guadalupe 2024-2027",
+                modifier = Modifier
+                    .height(160.dp)
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .padding(12.dp),
+            )
             Text("Cobro de Padrón", style = MaterialTheme.typography.headlineSmall)
             Text(
                 "Padrón de Comerciantes · Vía Pública",
@@ -160,7 +173,7 @@ fun LoginScreen(container: AppContainer, onLoggedIn: () -> Unit) {
                         value = state.server,
                         onValueChange = vm::onServer,
                         label = { Text("Servidor") },
-                        placeholder = { Text("https://padron.municipio.gob.mx") },
+                        placeholder = { Text("https://mercados.gpe.gob.mx") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                         modifier = Modifier.fillMaxWidth(),

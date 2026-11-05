@@ -25,7 +25,7 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "DEFAULT_SERVER_URL", "\"https://padron.example.gob.mx\"")
+            buildConfigField("String", "DEFAULT_SERVER_URL", "\"https://mercados.gpe.gob.mx\"")
         }
     }
 

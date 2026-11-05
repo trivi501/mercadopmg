@@ -22,6 +22,27 @@ class EscPosTest {
     }
 
     @Test
+    fun `codifica la imagen como mapa de bits GS v 0`() {
+        // 10 x 2 puntos: primera fila llena, segunda sólo el primer y el último punto.
+        val raster = EscPos.raster(10, 2) { x, y -> y == 0 || x == 0 || x == 9 }
+        val header = byteArrayOf(0x1D, 0x76, 0x30, 0, 2, 0, 2, 0) // 2 bytes por renglón, 2 renglones
+        assertArrayEquals(header, raster.copyOfRange(0, 8))
+        assertArrayEquals(
+            byteArrayOf(0xFF.toByte(), 0xC0.toByte(), 0x80.toByte(), 0x40),
+            raster.copyOfRange(8, raster.size),
+        )
+    }
+
+    @Test
+    fun `el logo se imprime centrado antes del texto`() {
+        val logo = EscPos.raster(8, 1) { _, _ -> true }
+        val bytes = EscPos.build(listOf(TicketLine("HOLA")), qrContent = null, logo = logo)
+        val start = 5 + 3 // inicializar + CP850, luego ESC a 1
+        assertArrayEquals(byteArrayOf(0x1B, 0x61, 1), bytes.copyOfRange(5, 8))
+        assertArrayEquals(logo, bytes.copyOfRange(start, start + logo.size))
+    }
+
+    @Test
     fun `el qr declara la longitud de los datos`() {
         val content = "https://x/verificar/abc"
         val qr = EscPos.qr(content)

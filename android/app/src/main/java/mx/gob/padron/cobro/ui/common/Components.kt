@@ -1,14 +1,16 @@
 package mx.gob.padron.cobro.ui.common
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
@@ -20,14 +22,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mx.gob.padron.cobro.R
 import mx.gob.padron.cobro.data.remote.TicketLine
 import mx.gob.padron.cobro.ui.theme.PaidGreen
 import mx.gob.padron.cobro.ui.theme.PendingAmber
@@ -102,34 +110,66 @@ fun SectionCard(title: String? = null, modifier: Modifier = Modifier, content: @
 }
 
 /**
- * Vista previa del ticket térmico: papel blanco y tipografía monoespaciada,
- * con los mismos renglones que se envían a la impresora.
+ * Vista previa del ticket térmico: papel blanco, el escudo del encabezado y
+ * tipografía monoespaciada con los mismos renglones que se envían a la
+ * impresora. Ocupa todo el ancho y ajusta la letra para que los renglones
+ * (32 o 48 columnas) lleguen de orilla a orilla, como en el papel.
  */
 @Composable
 fun TicketPreview(lines: List<TicketLine>, modifier: Modifier = Modifier) {
+    val columns = lines.maxOfOrNull { it.text.length }?.coerceAtLeast(24) ?: 32
+
     Surface(
         color = Color.White,
         shadowElevation = 2.dp,
         shape = RoundedCornerShape(4.dp),
-        modifier = modifier.widthIn(max = 360.dp).fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
-        Column(Modifier.padding(12.dp)) {
-            lines.forEach { line ->
-                Text(
-                    text = line.text,
-                    color = Color.Black,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = if (line.size == "double") 13.sp else 11.sp,
-                    fontWeight = if (line.bold) FontWeight.Bold else FontWeight.Normal,
-                    textAlign = when (line.align) {
-                        "center" -> TextAlign.Center
-                        "right" -> TextAlign.End
-                        else -> TextAlign.Start
-                    },
+        BoxWithConstraints(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
+            // Se mide el renglón más ancho a 100 sp (negritas, el caso más ancho) y se escala al ancho disponible.
+            val measurer = rememberTextMeasurer()
+            val widthPx = constraints.maxWidth.toFloat()
+            val fontSize = remember(columns, widthPx) {
+                val reference = measurer.measure(
+                    "0".repeat(columns),
+                    TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 100.sp, letterSpacing = 0.sp),
                     softWrap = false,
-                    modifier = Modifier.fillMaxWidth(),
+                ).size.width
+                (100f * widthPx / reference * 0.98f).sp
+            }
+
+            Column(Modifier.fillMaxWidth()) {
+                Image(
+                    painter = painterResource(R.drawable.ticket_logo),
+                    contentDescription = "Escudo del Ayuntamiento de Guadalupe",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .height(72.dp)
+                        .padding(bottom = 6.dp),
                 )
+                lines.forEach { line -> TicketText(line, fontSize) }
             }
         }
     }
+}
+
+@Composable
+private fun TicketText(line: TicketLine, fontSize: TextUnit) {
+    Text(
+        text = line.text,
+        color = Color.Black,
+        fontFamily = FontFamily.Monospace,
+        fontSize = fontSize,
+        letterSpacing = 0.sp,
+        // "double" = doble alto en la impresora (mismo ancho de columnas).
+        lineHeight = if (line.size == "double") fontSize * 2.2f else fontSize * 1.3f,
+        fontWeight = if (line.bold) FontWeight.Bold else FontWeight.Normal,
+        textAlign = when (line.align) {
+            "center" -> TextAlign.Center
+            "right" -> TextAlign.End
+            else -> TextAlign.Start
+        },
+        softWrap = false,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }

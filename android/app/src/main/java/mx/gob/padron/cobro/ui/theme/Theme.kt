@@ -7,20 +7,26 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val Blue = Color(0xFF1F5FAE)
+// Colores del logotipo del Ayuntamiento de Guadalupe 2024-2027.
+private val Guinda = Color(0xFF783548)
+private val Arena = Color(0xFFC69776)
 
 private val LightColors = lightColorScheme(
-    primary = Blue,
+    primary = Guinda,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD6E3FF),
-    onPrimaryContainer = Color(0xFF001B3E),
+    primaryContainer = Color(0xFFFFD9E0),
+    onPrimaryContainer = Color(0xFF3B0716),
+    secondary = Arena,
+    onSecondary = Color(0xFF2E1500),
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFFA9C7FF),
-    onPrimary = Color(0xFF003063),
-    primaryContainer = Color(0xFF00468C),
-    onPrimaryContainer = Color(0xFFD6E3FF),
+    primary = Color(0xFFFFB1C3),
+    onPrimary = Color(0xFF561D30),
+    primaryContainer = Guinda,
+    onPrimaryContainer = Color(0xFFFFD9E0),
+    secondary = Arena,
+    onSecondary = Color(0xFF2E1500),
 )
 
 /** Verde/ámbar para estados; siempre acompañados de texto. */

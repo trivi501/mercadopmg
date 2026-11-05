@@ -18,11 +18,20 @@ object EscPos {
 
     private val cp850: Charset? = runCatching { Charset.forName("IBM850") }.getOrNull()
 
-    fun build(lines: List<TicketLine>, qrContent: String?, feedLines: Int = 4): ByteArray {
+    /**
+     * @param logo imagen ya codificada con [raster]; se imprime centrada antes del texto.
+     */
+    fun build(lines: List<TicketLine>, qrContent: String?, feedLines: Int = 4, logo: ByteArray? = null): ByteArray {
         val out = ByteArrayOutputStream()
 
         out.write(byteArrayOf(ESC, 0x40)) // inicializar
         out.write(byteArrayOf(ESC, 0x74, 2)) // página de códigos CP850
+
+        if (logo != null) {
+            out.write(byteArrayOf(ESC, 0x61, 1))
+            out.write(logo)
+            out.write(0x0A)
+        }
 
         for (line in lines) {
             out.write(byteArrayOf(ESC, 0x61, alignment(line.align)))
@@ -67,6 +76,32 @@ object EscPos {
         out.write(data)
         // Imprimir
         out.write(byteArrayOf(GS, 0x28, 0x6B, 3, 0, 0x31, 0x51, 0x30))
+
+        return out.toByteArray()
+    }
+
+    /**
+     * Imagen monocromática como mapa de bits (GS v 0, densidad normal).
+     * [dark] indica qué puntos se imprimen; cada renglón ocupa ancho/8 bytes.
+     */
+    fun raster(width: Int, height: Int, dark: (x: Int, y: Int) -> Boolean): ByteArray {
+        val bytesPerRow = (width + 7) / 8
+        val out = ByteArrayOutputStream()
+
+        out.write(byteArrayOf(GS, 0x76, 0x30, 0))
+        out.write(byteArrayOf((bytesPerRow % 256).toByte(), (bytesPerRow / 256).toByte()))
+        out.write(byteArrayOf((height % 256).toByte(), (height / 256).toByte()))
+
+        for (y in 0 until height) {
+            for (byteIndex in 0 until bytesPerRow) {
+                var b = 0
+                for (bit in 0 until 8) {
+                    val x = byteIndex * 8 + bit
+                    if (x < width && dark(x, y)) b = b or (0x80 ushr bit)
+                }
+                out.write(b)
+            }
+        }
 
         return out.toByteArray()
     }
