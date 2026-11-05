@@ -17,13 +17,23 @@
         .summary td { border: none; padding: 2px 8px 2px 0; font-size: 9px; }
         .summary td:first-child { font-weight: bold; }
         .warn { color: #a00; margin-top: 6px; }
+        .brand td { border: none; padding: 0; vertical-align: middle; background: none !important; }
+        .brand .logo { width: 52px; padding-right: 10px; }
+        .brand .logo img { width: 52px; }
     </style>
 </head>
 <body>
     <header>
-        <div class="meta">{{ \Illuminate\Support\Str::upper((string) \App\Models\Setting::get('municipality_name', 'Municipio')) }} · PADRÓN DE COMERCIANTES</div>
-        <h1>{{ $title }}</h1>
-        <div class="meta">Generado el {{ now()->format('d/m/Y H:i') }} por {{ auth()->user()?->name }}</div>
+        <table class="brand">
+            <tr>
+                <td class="logo"><img src="{{ \App\Support\Logo::dataUri() }}" alt="Ayuntamiento de Guadalupe"></td>
+                <td>
+                    <div class="meta">{{ \Illuminate\Support\Str::upper((string) \App\Models\Setting::get('municipality_name', 'Municipio')) }} · PADRÓN DE COMERCIANTES</div>
+                    <h1>{{ $title }}</h1>
+                    <div class="meta">Generado el {{ now()->format('d/m/Y H:i') }} por {{ auth()->user()?->name }}</div>
+                </td>
+            </tr>
+        </table>
     </header>
 
     <table>

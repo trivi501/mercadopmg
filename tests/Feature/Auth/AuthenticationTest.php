@@ -19,6 +19,19 @@ class AuthenticationTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_public_registration_is_disabled()
+    {
+        $this->assertFalse(Features::enabled(Features::registration()));
+
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', [
+            'name' => 'Intruso',
+            'email' => 'intruso@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertNotFound();
+    }
+
     public function test_users_can_authenticate_using_the_login_screen()
     {
         $user = User::factory()->create();

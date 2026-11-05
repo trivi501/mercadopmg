@@ -16,6 +16,7 @@
         .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
         .ok { background: #dcfce7; color: #166534; }
         .bad { background: #fee2e2; color: #991b1b; }
+        .logo { display: block; height: 120px; margin: 0 auto 16px; padding: 8px; border-radius: 8px; background: #fff; }
         @media (prefers-color-scheme: dark) {
             body { background: #09090b; color: #fafafa; }
             .card { background: #18181b; }
@@ -25,6 +26,7 @@
 </head>
 <body>
     <div class="card">
+        <img class="logo" src="/images/logo-guadalupe.png" alt="Ayuntamiento de Guadalupe 2024-2027">
         <h1>{{ \Illuminate\Support\Str::upper((string) \App\Models\Setting::get('municipality_name', 'Municipio')) }}</h1>
         <p>Verificación de recibo de pago</p>
         <dl>

@@ -1,5 +1,6 @@
 {{-- Contenido del ticket compartido por el PDF y la vista de impresión térmica. --}}
 <div class="ticket">
+    <div class="center"><img class="logo" src="{{ \App\Support\Logo::dataUri(\App\Support\Logo::SHIELD_BLACK) }}" alt="Ayuntamiento de Guadalupe"></div>
     <div class="center bold">{{ $t['header']['municipality'] }}</div>
     <div class="center bold">{{ $t['header']['system'] }}</div>
     <div class="center bold">{{ $t['header']['title'] }}</div>

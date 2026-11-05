@@ -18,6 +18,7 @@
         .total td { font-weight: bold; font-size: 11px; }
         .stamp { text-align: center; font-weight: bold; font-size: 14px; border: 2px solid #000; margin: 4px 0; padding: 2px; }
         .qr { width: 110px; height: 110px; margin-top: 4px; }
+        .logo { height: 60px; margin-bottom: 4px; }
     </style>
 </head>
 <body>

@@ -20,6 +20,7 @@
         .total td { font-weight: bold; font-size: 1.2em; }
         .stamp { text-align: center; font-weight: bold; font-size: 1.4em; border: 2px solid #000; margin: 4px 0; padding: 2px; }
         .qr { width: {{ $width == 58 ? '30mm' : '38mm' }}; height: auto; margin-top: 4px; image-rendering: pixelated; }
+        .logo { height: {{ $width == 58 ? '18mm' : '22mm' }}; width: auto; margin-bottom: 4px; }
         .toolbar { text-align: center; padding: 12px; font-family: system-ui, sans-serif; }
         .toolbar button, .toolbar a { font: inherit; padding: 6px 14px; margin: 0 4px; border: 1px solid #333; background: #fff; border-radius: 6px; cursor: pointer; color: #000; text-decoration: none; }
         @media print {
