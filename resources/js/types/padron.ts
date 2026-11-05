@@ -164,3 +164,50 @@ export type Concept = {
     type: 'annuality' | 'ticket' | 'other';
     amount: string;
 };
+
+export type CashSession = {
+    id: number;
+    uuid: string;
+    folio: string;
+    status: 'open' | 'closed';
+    status_label: string;
+    is_open: boolean;
+    user?: NamedItem;
+    opened_at: string;
+    opened_at_label: string;
+    opening_amount: string;
+    opening_notes: string | null;
+    closed_at: string | null;
+    closed_at_label: string | null;
+    closed_by?: NamedItem | null;
+    total_collected: string | null;
+    expected_cash: string | null;
+    counted_cash: string | null;
+    difference: string | null;
+    closing_notes: string | null;
+    source: string;
+};
+
+export type CashSummary = {
+    receipts: number;
+    cancelled: number;
+    cancelled_amount: string;
+    first_folio: string | null;
+    last_folio: string | null;
+    total_collected: string;
+    opening_amount: string;
+    cash_collected: string;
+    expected_cash: string;
+    by_method: {
+        method: string;
+        label: string;
+        count: number;
+        amount: string;
+    }[];
+    by_concept: {
+        code: string;
+        name: string;
+        quantity: number;
+        amount: string;
+    }[];
+};

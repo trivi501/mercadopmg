@@ -21,20 +21,23 @@ Todas las respuestas de error tienen la misma forma:
 }
 ```
 
-| HTTP | `code`                   | Significado                                         |
-| ---- | ------------------------ | --------------------------------------------------- |
-| 401  | `unauthenticated`        | Token ausente, vencido o revocado → volver al login |
-| 403  | `forbidden`              | El rol no tiene permiso                             |
-| 403  | `user_inactive`          | Usuario desactivado; sus tokens se revocaron        |
-| 404  | `not_found`              | Recurso inexistente (p. ej. folio QR desconocido)   |
-| 422  | `validation_error`       | Datos inválidos; ver `errors` por campo             |
-| 422  | `annuality_already_paid` | La anualidad del ejercicio ya está pagada           |
-| 422  | `annuality_duplicated`   | La misma anualidad aparece dos veces en el cobro    |
-| 422  | `merchant_inactive`      | El comerciante no está activo                       |
-| 422  | `concept_unavailable`    | Concepto inexistente o desactivado                  |
-| 422  | `already_printed`        | El ticket ya se imprimió; usar reimpresión          |
-| 422  | `receipt_cancelled`      | El recibo está cancelado                            |
-| 429  | `too_many_requests`      | Límite de peticiones; respetar `Retry-After`        |
+| HTTP | `code`                   | Significado                                           |
+| ---- | ------------------------ | ----------------------------------------------------- |
+| 401  | `unauthenticated`        | Token ausente, vencido o revocado → volver al login   |
+| 403  | `forbidden`              | El rol no tiene permiso                               |
+| 403  | `user_inactive`          | Usuario desactivado; sus tokens se revocaron          |
+| 404  | `not_found`              | Recurso inexistente (p. ej. folio QR desconocido)     |
+| 422  | `validation_error`       | Datos inválidos; ver `errors` por campo               |
+| 422  | `annuality_already_paid` | La anualidad del ejercicio ya está pagada             |
+| 422  | `annuality_duplicated`   | La misma anualidad aparece dos veces en el cobro      |
+| 422  | `merchant_inactive`      | El comerciante no está activo                         |
+| 422  | `concept_unavailable`    | Concepto inexistente o desactivado                    |
+| 422  | `already_printed`        | El ticket ya se imprimió; usar reimpresión            |
+| 422  | `receipt_cancelled`      | El recibo está cancelado                              |
+| 422  | `cash_session_required`  | Sin corte de caja abierto: iniciar cobro primero      |
+| 422  | `cash_session_open`      | Ya hay un corte abierto; cerrarlo antes de abrir otro |
+| 422  | `cash_session_closed`    | El corte ya fue cerrado                               |
+| 429  | `too_many_requests`      | Límite de peticiones; respetar `Retry-After`          |
 
 Límites: login 5/min por usuario+IP; API 120/min por usuario; sincronización 30/min.
 
@@ -300,6 +303,20 @@ Detalle de un pago (renglón de concepto).
 | POST   | `/receipts/{id}/cancel`  | `{ "reason": "…" }` (mín. 10 caracteres). Sólo administradores                                                                                                          |
 
 Flujo sugerido en la app: `POST /payments` → imprimir `ticket.lines` → `POST /receipts/{id}/print`. Si la impresora falla después de marcar la impresión, pedir motivo y usar `/reprint`.
+
+## Cortes de caja
+
+Cada recaudador abre su corte (**inicio de cobro** con fondo inicial) antes de cobrar: sin corte abierto `POST /payments` responde `cash_session_required`. Todos sus cobros quedan ligados al corte hasta el **corte final**, donde captura el efectivo contado y el sistema calcula lo esperado (fondo + cobros en efectivo) y el sobrante o faltante. Al cerrar, los totales quedan congelados.
+
+| Método | Ruta                        | Notas                                                                                                        |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| GET    | `/cash-sessions/current`    | `{ current: {session, summary, lines}                                                                        | null, last_closed: session | null }`. `?paper_width=58 | 80` |
+| POST   | `/cash-sessions`            | `{ "uuid": "…", "opening_amount": "500.00", "opening_notes": null }`. Mismo `uuid` ⇒ mismo corte (201 / 200) |
+| GET    | `/cash-sessions/{id}`       | Corte con `summary` (por concepto y forma de pago) y `lines` del reporte para la impresora térmica           |
+| POST   | `/cash-sessions/{id}/close` | `{ "counted_cash": "620.00", "closing_notes": null }`. Devuelve el corte cerrado con `difference`            |
+| GET    | `/cash-sessions`            | Historial paginado de los cortes del usuario                                                                 |
+
+Los cobros que llegan por `/sync` (capturados sin conexión) nunca se rechazan por falta de corte: se ligan al corte abierto o quedan sin corte si ya se cerró. Por eso la app no permite el corte final mientras haya cobros pendientes de sincronizar.
 
 ## Sincronización sin conexión
 

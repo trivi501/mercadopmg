@@ -121,6 +121,14 @@ class Receipt extends Model
     }
 
     /**
+     * @return BelongsTo<CashRegisterSession, $this>
+     */
+    public function cashSession(): BelongsTo
+    {
+        return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
+    }
+
+    /**
      * @return HasMany<ReceiptItem, $this>
      */
     public function items(): HasMany

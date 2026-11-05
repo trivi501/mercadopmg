@@ -54,6 +54,18 @@ class SessionStore(context: Context) {
         get() = prefs.getInt(KEY_PAPER, 58)
         set(value) = prefs.edit { putInt(KEY_PAPER, if (value == 80) 80 else 58) }
 
+    /**
+     * Corte de caja abierto del usuario según la última respuesta del servidor.
+     * Sin corte abierto no se permite cobrar, ni siquiera sin conexión.
+     */
+    var cashSessionId: Int?
+        get() = prefs.getInt(KEY_CASH_SESSION, 0).takeIf { it > 0 }
+        set(value) = prefs.edit { if (value == null) remove(KEY_CASH_SESSION) else putInt(KEY_CASH_SESSION, value) }
+
+    var cashSessionFolio: String?
+        get() = prefs.getString(KEY_CASH_FOLIO, null)
+        set(value) = prefs.edit { putString(KEY_CASH_FOLIO, value) }
+
     var municipalityName: String
         get() = prefs.getString(KEY_MUNICIPALITY, null) ?: "MUNICIPIO"
         set(value) = prefs.edit { putString(KEY_MUNICIPALITY, value) }
@@ -79,6 +91,8 @@ class SessionStore(context: Context) {
         prefs.edit {
             remove(KEY_TOKEN)
             remove(KEY_USER)
+            remove(KEY_CASH_SESSION)
+            remove(KEY_CASH_FOLIO)
         }
         _user.value = null
     }
@@ -102,5 +116,7 @@ class SessionStore(context: Context) {
         const val KEY_MUNICIPALITY = "municipality"
         const val KEY_FOOTER = "ticket_footer"
         const val KEY_MERCHANTS_SYNC = "merchants_synced_at"
+        const val KEY_CASH_SESSION = "cash_session_id"
+        const val KEY_CASH_FOLIO = "cash_session_folio"
     }
 }

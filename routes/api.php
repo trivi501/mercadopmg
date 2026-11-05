@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\MerchantController;
@@ -46,6 +47,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('receipts/{receipt}/print', [ReceiptController::class, 'print'])->name('receipts.print');
         Route::post('receipts/{receipt}/reprint', [ReceiptController::class, 'reprint'])->name('receipts.reprint');
         Route::post('receipts/{receipt}/cancel', [ReceiptController::class, 'cancel'])->name('receipts.cancel');
+
+        Route::get('cash-sessions/current', [CashSessionController::class, 'current'])->name('cash-sessions.current');
+        Route::get('cash-sessions', [CashSessionController::class, 'index'])->name('cash-sessions.index');
+        Route::post('cash-sessions', [CashSessionController::class, 'store'])->name('cash-sessions.store');
+        Route::get('cash-sessions/{cashSession}', [CashSessionController::class, 'show'])->name('cash-sessions.show');
+        Route::post('cash-sessions/{cashSession}/close', [CashSessionController::class, 'close'])->name('cash-sessions.close');
 
         Route::post('sync', [SyncController::class, 'push'])->middleware('throttle:api-sync')->name('sync');
 

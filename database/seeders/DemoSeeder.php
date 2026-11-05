@@ -11,6 +11,7 @@ use App\Models\MarketRoute;
 use App\Models\Merchant;
 use App\Models\Tianguis;
 use App\Models\User;
+use App\Services\CashRegisterService;
 use App\Services\MerchantService;
 use App\Services\PaymentService;
 use Illuminate\Database\Seeder;
@@ -22,7 +23,7 @@ use Illuminate\Support\Str;
  */
 class DemoSeeder extends Seeder
 {
-    public function run(MerchantService $merchants, PaymentService $payments): void
+    public function run(MerchantService $merchants, PaymentService $payments, CashRegisterService $cash): void
     {
         foreach ([Role::Collector->value => ['recaudador', 'Recaudador Demo'], Role::Inspector->value => ['inspector', 'Inspector Demo'], Role::DataEntry->value => ['capturista', 'Capturista Demo']] as $role => [$username, $name]) {
             $user = User::query()->firstOrCreate(['username' => $username], [
@@ -69,8 +70,10 @@ class DemoSeeder extends Seeder
         $annuality = Concept::query()->ofType(ConceptType::Annuality)->firstOrFail();
         $collector = User::query()->where('username', 'recaudador')->firstOrFail();
 
-        // Cobros de los últimos 60 días.
+        // Cobros de los últimos 60 días, un corte de caja por día (el de hoy queda abierto).
         foreach (range(60, 0) as $daysAgo) {
+            $session = $cash->open($collector, ['opening_amount' => '500']);
+
             $created->random(fake()->numberBetween(3, 10))->each(function (Merchant $merchant) use ($payments, $collector, $ticket, $annuality, $daysAgo) {
                 $items = [['concept_id' => $ticket->id, 'quantity' => fake()->numberBetween(1, 6)]];
                 if (! $merchant->annualities()->where('fiscal_year', now()->year)->where('status', 'paid')->exists() && fake()->boolean(25)) {
@@ -86,6 +89,11 @@ class DemoSeeder extends Seeder
                     'source' => fake()->boolean(70) ? 'android' : 'web',
                 ], $collector);
             });
+
+            if ($daysAgo > 0) {
+                $expected = CashRegisterService::amount($cash->summary($session)['expected_cash']);
+                $cash->close($session, $collector, fake()->boolean(80) ? $expected : bcsub($expected, (string) fake()->numberBetween(10, 50), 2));
+            }
         }
     }
 }

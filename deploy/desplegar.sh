@@ -27,6 +27,8 @@ npm run build
 
 echo "==> Base de datos"
 php artisan migrate --force
+# Permisos nuevos de cada versión (idempotente: sólo sincroniza roles y permisos).
+php artisan db:seed --class=RolesAndPermissionsSeeder --force
 
 echo "==> Caché de configuración, rutas, vistas y eventos"
 php artisan optimize:clear

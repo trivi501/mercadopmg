@@ -33,6 +33,7 @@ class ReceiptTest extends TestCase
         parent::setUp();
 
         $this->collector = $this->userWithRole(Role::Collector);
+        $this->openCashSession($this->collector);
         $this->receipt = app(PaymentService::class)->charge([
             'merchant_id' => Merchant::factory()->create()->id,
             'payment_method' => 'cash',

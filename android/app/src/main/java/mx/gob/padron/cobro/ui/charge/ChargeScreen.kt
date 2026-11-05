@@ -181,6 +181,10 @@ class ChargeViewModel(
         val s = _state.value
         val merchant = s.merchant ?: return
         if (s.lines.isEmpty() || s.submitting) return
+        if (container.session.cashSessionId == null) {
+            _state.update { it.copy(confirming = false, error = "Inicie su corte de cobro en la pantalla de inicio antes de cobrar.") }
+            return
+        }
 
         val items = buildList {
             s.ticketConcept?.let { if (s.tickets > 0) add(ChargeItem(conceptId = it.id, quantity = s.tickets)) }
@@ -214,6 +218,8 @@ class ChargeViewModel(
                 }
                 is ChargeRepository.Outcome.Rejected -> {
                     _state.update { it.copy(submitting = false, error = outcome.message) }
+                    // El corte se cerró en otro lado (por ejemplo, desde la web).
+                    if (outcome.code == "cash_session_required") container.cash.forget()
                     if (outcome.code == "annuality_already_paid") {
                         _state.update { it.copy(annualityYear = null) }
                         load()

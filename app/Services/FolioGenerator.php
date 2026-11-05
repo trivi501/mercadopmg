@@ -20,10 +20,13 @@ class FolioGenerator
 
     public const string RECEIPT = 'receipt';
 
+    public const string CASH_SESSION = 'cash_session';
+
     /** @var array<string, array{prefix: string, padding: int}> */
     private const array DEFAULTS = [
         self::MERCHANT => ['prefix' => 'COM-', 'padding' => 6],
         self::RECEIPT => ['prefix' => 'REC-', 'padding' => 8],
+        self::CASH_SESSION => ['prefix' => 'COR-', 'padding' => 6],
     ];
 
     public function next(string $sequence): string

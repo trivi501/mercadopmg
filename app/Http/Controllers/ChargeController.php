@@ -9,6 +9,7 @@ use App\Models\Concept;
 use App\Models\Merchant;
 use App\Models\Receipt;
 use App\Services\AccountStatementService;
+use App\Services\CashRegisterService;
 use App\Services\PaymentService;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,7 @@ use Inertia\Response;
  */
 class ChargeController extends Controller
 {
-    public function create(Request $request, AccountStatementService $statements): Response
+    public function create(Request $request, AccountStatementService $statements, CashRegisterService $cashRegister): Response
     {
         $this->authorize('create', Receipt::class);
 
@@ -42,6 +43,9 @@ class ChargeController extends Controller
             'ticketTypes' => [ConceptType::Ticket->value],
             'options' => Options::for(['payment_methods', 'tianguis']),
             'currentYear' => (int) now()->year,
+            'cashSession' => ($session = $cashRegister->current($request->user()))
+                ? ['id' => $session->id, 'folio' => $session->folio, 'opened_at_label' => $session->opened_at->format('d/m/Y H:i')]
+                : null,
         ]);
     }
 

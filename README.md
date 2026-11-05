@@ -86,11 +86,11 @@ Guía paso a paso para **https://mercados.gpe.gob.mx** (Ubuntu + Nginx + PHP-FPM
 
 ## Roles
 
-| Rol           | Puede                                                                        |
-| ------------- | ---------------------------------------------------------------------------- |
-| Administrador | Todo                                                                         |
-| Recaudador    | Consultar padrón, cobrar, imprimir y reimprimir tickets, consultar historial |
-| Inspector     | Consultar padrón, ubicación, situación y pagos                               |
-| Capturista    | Registrar y modificar comerciantes, consultar padrón                         |
+| Rol           | Puede                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| Administrador | Todo                                                                                                          |
+| Recaudador    | Consultar padrón, abrir y cerrar su corte de caja, cobrar, imprimir y reimprimir tickets, consultar historial |
+| Inspector     | Consultar padrón, ubicación, situación y pagos                                                                |
+| Capturista    | Registrar y modificar comerciantes, consultar padrón                                                          |
 
 Los permisos se definen en `app/Enums/Permission.php` y se aplican con `php artisan db:seed --class=RolesAndPermissionsSeeder`.

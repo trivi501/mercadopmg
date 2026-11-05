@@ -10,6 +10,7 @@ import mx.gob.padron.cobro.data.remote.TicketLine
 class TicketPrinter(
     private val printer: BluetoothPrinter,
     private val session: SessionStore,
+    private val logo: TicketLogo,
 ) {
     val isConfigured: Boolean get() = session.printerAddress != null
 
@@ -18,7 +19,19 @@ class TicketPrinter(
         val address = session.printerAddress ?: return "Configure la impresora en Ajustes."
 
         return try {
-            printer.print(address, EscPos.build(ticket.lines, ticket.qrContent))
+            printer.print(address, EscPos.build(ticket.lines, ticket.qrContent, logo = logo.forPaper(session.paperWidth)))
+            null
+        } catch (e: BluetoothPrinter.PrinterException) {
+            e.message
+        }
+    }
+
+    /** Imprime renglones ya formateados por el servidor (reporte de corte de caja). */
+    suspend fun printLines(lines: List<TicketLine>): String? {
+        val address = session.printerAddress ?: return "Configure la impresora en Ajustes."
+
+        return try {
+            printer.print(address, EscPos.build(lines, qrContent = null, logo = logo.forPaper(session.paperWidth)))
             null
         } catch (e: BluetoothPrinter.PrinterException) {
             e.message
@@ -39,7 +52,7 @@ class TicketPrinter(
         )
 
         return try {
-            printer.print(address, EscPos.build(lines, "PRUEBA"))
+            printer.print(address, EscPos.build(lines, "PRUEBA", logo = logo.forPaper(session.paperWidth)))
             null
         } catch (e: BluetoothPrinter.PrinterException) {
             e.message

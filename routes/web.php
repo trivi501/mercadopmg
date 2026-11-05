@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CashSessionController;
 use App\Http\Controllers\Catalogs\BusinessTypeController;
 use App\Http\Controllers\Catalogs\ConceptController;
 use App\Http\Controllers\Catalogs\RouteController;
@@ -50,6 +51,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Cobranza y recibos
     Route::get('cobros/nuevo', [ChargeController::class, 'create'])->name('charges.create');
     Route::post('cobros', [ChargeController::class, 'store'])->name('charges.store');
+
+    // Cortes de caja
+    Route::get('cortes', [CashSessionController::class, 'index'])->name('cash-sessions.index');
+    Route::post('cortes', [CashSessionController::class, 'store'])->name('cash-sessions.store');
+    Route::get('cortes/{cashSession}', [CashSessionController::class, 'show'])->name('cash-sessions.show');
+    Route::post('cortes/{cashSession}/cerrar', [CashSessionController::class, 'close'])->name('cash-sessions.close');
+    Route::get('cortes/{cashSession}/ticket', [CashSessionController::class, 'thermal'])->name('cash-sessions.thermal');
+    Route::get('cortes/{cashSession}/pdf', [CashSessionController::class, 'pdf'])->name('cash-sessions.pdf');
 
     Route::get('recibos', [ReceiptController::class, 'index'])->name('receipts.index');
     Route::get('recibos/reimpresiones', [ReceiptController::class, 'reprints'])->name('receipts.reprints');

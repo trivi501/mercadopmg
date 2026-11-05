@@ -11,6 +11,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\ReceiptStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Annuality;
+use App\Models\CashRegisterSession;
 use App\Models\Concept;
 use App\Models\Merchant;
 use App\Models\Payment;
@@ -55,6 +56,10 @@ class PaymentService
      * payment_method, reference?, notes?, issued_at?, source?, device? e items[]
      * con concept_id, quantity?, fiscal_year?, service_date? y tianguis_id?.
      *
+     * El cobro queda ligado al corte de caja abierto del usuario; sin corte
+     * abierto se rechaza, salvo los cobros capturados sin conexión (`offline`),
+     * que ya se cobraron en campo y no pueden perderse.
+     *
      * @param  array<string, mixed>  $data
      */
     public function charge(array $data, User $user): Receipt
@@ -89,6 +94,12 @@ class PaymentService
             throw new BusinessRuleException("El comerciante {$merchant->folio} no está activo; no se puede registrar el cobro.", 'merchant_inactive', 'merchant_id');
         }
 
+        $cashSession = CashRegisterSession::query()->open()->where('user_id', $user->id)->sharedLock()->latest('id')->first();
+
+        if (! $cashSession && empty($data['offline'])) {
+            throw new BusinessRuleException('Inicie su corte de cobro antes de registrar cobros.', 'cash_session_required');
+        }
+
         $method = PaymentMethod::from((string) $data['payment_method']);
         $issuedAt = isset($data['issued_at']) ? Carbon::parse((string) $data['issued_at']) : now();
         /** @var list<array<string, mixed>> $items */
@@ -112,6 +123,7 @@ class PaymentService
             'payment_method' => $method,
             'status' => ReceiptStatus::Issued,
             'reprint_count' => 0,
+            'cash_register_session_id' => $cashSession?->id,
             'source' => $data['source'] ?? 'web',
             'device' => isset($data['device']) ? Str::limit((string) $data['device'], 250, '') : null,
             'notes' => $data['notes'] ?? null,

@@ -3,6 +3,7 @@ import { Minus, Plus, Search, Wallet } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
+import { OpenCashDialog } from '@/components/padron/cash-session';
 import { FilterSelect } from '@/components/padron/filter-select';
 import { PageBody, PageHeader } from '@/components/padron/page-header';
 import { StatusBadge } from '@/components/padron/status-badge';
@@ -13,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { money } from '@/lib/format';
+import { show as cashSessionShow } from '@/routes/cash-sessions';
 import { create, store } from '@/routes/charges';
 import { show as merchantShow } from '@/routes/merchants';
 import type { Account, Concept, Merchant, Option } from '@/types/padron';
@@ -24,6 +26,7 @@ type Props = {
     concepts: Concept[];
     options: { payment_methods: Option[] };
     currentYear: number;
+    cashSession: { id: number; folio: string; opened_at_label: string } | null;
 };
 
 type Line = { concept_id: number; quantity: number; fiscal_year?: number };
@@ -35,6 +38,7 @@ export default function ChargeCreate({
     concepts,
     options,
     currentYear,
+    cashSession,
 }: Props) {
     const merchant = wrapped?.data ?? null;
     const results = Array.isArray(search) ? [] : search.data;
@@ -142,6 +146,24 @@ export default function ChargeCreate({
                     title="Registrar cobro"
                     description="Boletos de tianguista, anualidad de uso de suelo y otros conceptos"
                 />
+
+                {cashSession ? (
+                    <p className="text-sm text-muted-foreground">
+                        Cobrando en el corte{' '}
+                        <Link
+                            href={cashSessionShow(cashSession.id)}
+                            className="font-mono font-medium text-primary hover:underline"
+                        >
+                            {cashSession.folio}
+                        </Link>{' '}
+                        (inicio {cashSession.opened_at_label}).
+                    </p>
+                ) : (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                        Para cobrar primero inicie su corte de caja.
+                        <OpenCashDialog />
+                    </div>
+                )}
 
                 {!merchant ? (
                     <Card className="max-w-2xl">
@@ -523,7 +545,8 @@ export default function ChargeCreate({
                                     disabled={
                                         form.processing ||
                                         lines.length === 0 ||
-                                        merchant.status !== 'active'
+                                        merchant.status !== 'active' ||
+                                        !cashSession
                                     }
                                 >
                                     {form.processing ? <Spinner /> : <Wallet />}{' '}

@@ -280,3 +280,58 @@ data class DashboardDto(
     @SerialName("annualities_paid_today") val annualitiesPaidToday: Int = 0,
     @SerialName("merchants_total") val merchantsTotal: Int = 0,
 )
+
+// ---------- Cortes de caja ----------
+
+@Serializable
+data class CashSessionDto(
+    val id: Int,
+    val uuid: String,
+    val folio: String,
+    val status: String,
+    @SerialName("is_open") val isOpen: Boolean,
+    @SerialName("opened_at_label") val openedAtLabel: String,
+    @SerialName("opening_amount") val openingAmount: String,
+    @SerialName("closed_at_label") val closedAtLabel: String? = null,
+    @SerialName("total_collected") val totalCollected: String? = null,
+    @SerialName("expected_cash") val expectedCash: String? = null,
+    @SerialName("counted_cash") val countedCash: String? = null,
+    val difference: String? = null,
+)
+
+@Serializable
+data class CashSummaryDto(
+    val receipts: Int = 0,
+    val cancelled: Int = 0,
+    @SerialName("total_collected") val totalCollected: String = "0.00",
+    @SerialName("opening_amount") val openingAmount: String = "0.00",
+    @SerialName("cash_collected") val cashCollected: String = "0.00",
+    @SerialName("expected_cash") val expectedCash: String = "0.00",
+)
+
+/** Corte con sus totales y el reporte en renglones para la impresora (mismo formato que el ticket). */
+@Serializable
+data class CashPayload(
+    val session: CashSessionDto,
+    val summary: CashSummaryDto,
+    val lines: List<TicketLine>,
+)
+
+@Serializable
+data class CashCurrentDto(
+    val current: CashPayload? = null,
+    @SerialName("last_closed") val lastClosed: CashSessionDto? = null,
+)
+
+@Serializable
+data class OpenCashRequest(
+    val uuid: String,
+    @SerialName("opening_amount") val openingAmount: String,
+    @SerialName("opening_notes") val openingNotes: String? = null,
+)
+
+@Serializable
+data class CloseCashRequest(
+    @SerialName("counted_cash") val countedCash: String,
+    @SerialName("closing_notes") val closingNotes: String? = null,
+)

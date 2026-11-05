@@ -147,7 +147,8 @@ class ApiTest extends TestCase
 
     public function test_payment_returns_ticket_and_duplicate_uuid_does_not_charge_twice(): void
     {
-        Sanctum::actingAs($this->userWithRole(Role::Collector));
+        Sanctum::actingAs($collector = $this->userWithRole(Role::Collector));
+        $this->openCashSession($collector);
         $merchant = Merchant::factory()->create();
         $payload = [
             'uuid' => (string) Str::uuid(),
@@ -183,7 +184,8 @@ class ApiTest extends TestCase
 
     public function test_business_rule_errors_have_codes(): void
     {
-        Sanctum::actingAs($this->userWithRole(Role::Collector));
+        Sanctum::actingAs($collector = $this->userWithRole(Role::Collector));
+        $this->openCashSession($collector);
         $merchant = Merchant::factory()->create();
         $charge = fn () => $this->postJson('/api/v1/payments', [
             'merchant_id' => $merchant->id, 'payment_method' => 'cash',
@@ -196,7 +198,8 @@ class ApiTest extends TestCase
 
     public function test_print_once_then_reprint_with_reason(): void
     {
-        Sanctum::actingAs($this->userWithRole(Role::Collector));
+        Sanctum::actingAs($collector = $this->userWithRole(Role::Collector));
+        $this->openCashSession($collector);
         $merchant = Merchant::factory()->create();
         $receiptId = $this->postJson('/api/v1/payments', [
             'merchant_id' => $merchant->id, 'payment_method' => 'cash',
@@ -220,7 +223,8 @@ class ApiTest extends TestCase
 
     public function test_account_payments_and_receipts_endpoints(): void
     {
-        Sanctum::actingAs($this->userWithRole(Role::Collector));
+        Sanctum::actingAs($collector = $this->userWithRole(Role::Collector));
+        $this->openCashSession($collector);
         $merchant = Merchant::factory()->create();
         $this->postJson('/api/v1/payments', [
             'merchant_id' => $merchant->id, 'payment_method' => 'cash',
@@ -242,6 +246,8 @@ class ApiTest extends TestCase
         $merchant = Merchant::factory()->create();
         $other = $this->userWithRole(Role::Collector);
         $mine = $this->userWithRole(Role::Collector);
+        $this->openCashSession($other);
+        $this->openCashSession($mine);
         $payload = ['merchant_id' => $merchant->id, 'payment_method' => 'cash', 'items' => [['concept_id' => $this->ticketConcept()->id, 'quantity' => 1]]];
 
         Sanctum::actingAs($other);

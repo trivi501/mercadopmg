@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     BookOpenText,
+    Calculator,
     FileBarChart,
     History,
     LayoutGrid,
@@ -35,6 +36,7 @@ import { index as businessTypesIndex } from '@/routes/catalogs/business-types';
 import { index as conceptsIndex } from '@/routes/catalogs/concepts';
 import { index as routesIndex } from '@/routes/catalogs/routes';
 import { index as tianguisIndex } from '@/routes/catalogs/tianguis';
+import { index as cashSessionsIndex } from '@/routes/cash-sessions';
 import { create as chargeCreate } from '@/routes/charges';
 import {
     index as merchantsIndex,
@@ -82,6 +84,12 @@ export function AppSidebar() {
                     title: 'Cobrar',
                     href: chargeCreate(),
                     icon: Wallet,
+                    permission: 'payments.create',
+                },
+                {
+                    title: 'Cortes de caja',
+                    href: cashSessionsIndex(),
+                    icon: Calculator,
                     permission: 'payments.create',
                 },
                 {

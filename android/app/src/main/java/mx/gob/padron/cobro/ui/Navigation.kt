@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import mx.gob.padron.cobro.AppContainer
+import mx.gob.padron.cobro.ui.cash.CashScreen
 import mx.gob.padron.cobro.ui.charge.ChargeScreen
 import mx.gob.padron.cobro.ui.history.HistoryScreen
 import mx.gob.padron.cobro.ui.home.HomeScreen
@@ -27,6 +28,7 @@ import mx.gob.padron.cobro.ui.settings.SettingsScreen
 @Serializable object ProvisionalTicketRoute
 @Serializable object HistoryRoute
 @Serializable object SettingsRoute
+@Serializable data class CashRoute(val id: Int)
 
 @Composable
 fun CobroNavHost(container: AppContainer) {
@@ -51,6 +53,15 @@ fun CobroNavHost(container: AppContainer) {
                 onSearch = { scan -> nav.navigate(SearchRoute(scan)) },
                 onHistory = { nav.navigate(HistoryRoute) },
                 onSettings = { nav.navigate(SettingsRoute) },
+                onCash = { id -> nav.navigate(CashRoute(id)) },
+            )
+        }
+        composable<CashRoute> { entry ->
+            CashScreen(
+                container,
+                sessionId = entry.toRoute<CashRoute>().id,
+                onBack = { nav.popBackStack() },
+                onHome = { nav.navigate(HomeRoute) { popUpTo(HomeRoute) { inclusive = true } } },
             )
         }
         composable<SearchRoute> { entry ->

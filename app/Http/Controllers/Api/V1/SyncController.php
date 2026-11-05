@@ -106,6 +106,8 @@ class SyncController extends Controller
             ...$data,
             'source' => 'android',
             'device' => $request->header('X-Device-Name') ?: $request->userAgent(),
+            // Capturado sin conexión: se liga al corte abierto, o queda sin corte si ya se cerró.
+            'offline' => true,
         ], $request->user());
 
         return [

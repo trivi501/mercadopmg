@@ -15,6 +15,8 @@ const tones: Record<string, string> = {
         'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
     inactive: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
     cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+    open: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
+    closed: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
 };
 
 export function StatusBadge({

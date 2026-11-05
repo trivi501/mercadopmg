@@ -4,8 +4,10 @@ namespace Tests;
 
 use App\Enums\ConceptType;
 use App\Enums\Role;
+use App\Models\CashRegisterSession;
 use App\Models\Concept;
 use App\Models\User;
+use App\Services\CashRegisterService;
 use Database\Seeders\TestingSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Laravel\Fortify\Features;
@@ -36,6 +38,14 @@ abstract class TestCase extends BaseTestCase
     protected function userWithRole(Role $role, array $attributes = []): User
     {
         return User::factory()->role($role)->create($attributes);
+    }
+
+    /**
+     * Inicio de cobro del usuario: sin corte abierto no se puede cobrar.
+     */
+    protected function openCashSession(User $user, string $openingAmount = '0'): CashRegisterSession
+    {
+        return app(CashRegisterService::class)->open($user, ['opening_amount' => $openingAmount]);
     }
 
     protected function ticketConcept(): Concept

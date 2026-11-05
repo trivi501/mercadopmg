@@ -75,4 +75,20 @@ interface ApiService {
 
     @POST("api/v1/sync")
     suspend fun sync(@Body body: SyncRequest): SyncResponse
+
+    @GET("api/v1/cash-sessions/current")
+    suspend fun currentCashSession(@Query("paper_width") paperWidth: Int): DataWrapper<CashCurrentDto>
+
+    @POST("api/v1/cash-sessions")
+    suspend fun openCashSession(@Body body: OpenCashRequest, @Query("paper_width") paperWidth: Int): DataWrapper<CashPayload>
+
+    @GET("api/v1/cash-sessions/{id}")
+    suspend fun cashSession(@Path("id") id: Int, @Query("paper_width") paperWidth: Int): DataWrapper<CashPayload>
+
+    @POST("api/v1/cash-sessions/{id}/close")
+    suspend fun closeCashSession(
+        @Path("id") id: Int,
+        @Body body: CloseCashRequest,
+        @Query("paper_width") paperWidth: Int,
+    ): DataWrapper<CashPayload>
 }

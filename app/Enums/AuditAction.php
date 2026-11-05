@@ -17,6 +17,8 @@ enum AuditAction: string
     case Export = 'export';
     case Login = 'login';
     case Logout = 'logout';
+    case CashOpen = 'cash_open';
+    case CashClose = 'cash_close';
 
     public function label(): string
     {
@@ -32,6 +34,8 @@ enum AuditAction: string
             self::Export => 'Exportar',
             self::Login => 'Inicio de sesión',
             self::Logout => 'Cierre de sesión',
+            self::CashOpen => 'Inicio de cobro',
+            self::CashClose => 'Corte de caja',
         };
     }
 }

@@ -28,6 +28,7 @@ class PaymentTest extends TestCase
         parent::setUp();
 
         $this->collector = $this->userWithRole(Role::Collector);
+        $this->openCashSession($this->collector);
         $this->merchant = Merchant::factory()->create();
     }
 

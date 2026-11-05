@@ -27,6 +27,7 @@ enum Permission: string
     case UsersManage = 'users.manage';
     case AuditView = 'audit.view';
     case SettingsManage = 'settings.manage';
+    case CashManage = 'cash.manage';
 
     public function label(): string
     {
@@ -49,6 +50,7 @@ enum Permission: string
             self::UsersManage => 'Administrar usuarios',
             self::AuditView => 'Consultar auditoría',
             self::SettingsManage => 'Administrar configuración',
+            self::CashManage => 'Consultar y cerrar cortes de todos los recaudadores',
         };
     }
 
