@@ -22,6 +22,9 @@ echo "==> Dependencias PHP"
 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
 echo "==> Frontend"
+# Sin caché de rutas: Wayfinder debe ver las rutas nuevas, no las del despliegue anterior.
+php artisan optimize:clear
+php artisan wayfinder:generate --with-form
 npm ci --no-audit --no-fund
 npm run build
 
