@@ -47,7 +47,7 @@ class ReportExporter
             $writer = $format === 'csv' ? new CsvWriter : new XlsxWriter;
             $writer->openToFile('php://output');
 
-            $writer->addRow(Row::fromValuesWithStyle(array_values($report->columns()), (new Style)->withFontBold(true)));
+            $writer->addRow(Row::fromValues(array_values($report->columns()), (new Style)->setFontBold()));
 
             $report->query()->lazy(500)->each(function (Model $model) use ($writer, $report) {
                 $writer->addRow(Row::fromValues(array_values($report->row($model))));

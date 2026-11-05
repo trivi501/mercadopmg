@@ -18,7 +18,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "openspout/openspout": "^5.12",
+        "openspout/openspout": "^4.28",
         "spatie/laravel-permission": "^8.3"
     },
     "require-dev": {
