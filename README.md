@@ -59,6 +59,8 @@ composer ci:check     # lint JS, TypeScript, Pint, PHPStan nivel 7 y pruebas
 
 ## Producción
 
+Guía paso a paso para **https://mercados.gpe.gob.mx** (Ubuntu + Nginx + PHP-FPM + MySQL): [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md), con los archivos de configuración y scripts en [`deploy/`](deploy). Resumen:
+
 1. `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...` (HTTPS obligatorio: la app móvil envía tokens).
 2. Defina `ADMIN_EMAIL` y `ADMIN_PASSWORD` antes de sembrar; si omite la contraseña se genera una aleatoria y se muestra una sola vez.
 3. Instalación:

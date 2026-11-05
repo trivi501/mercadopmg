@@ -1,0 +1,9 @@
+# /etc/cron.d/mercadopmg
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Tareas programadas de Laravel (anualidades del 1 de enero, etc.)
+* * * * * www-data cd /var/www/mercadopmg && php artisan schedule:run >> /dev/null 2>&1
+
+# Respaldo diario de la base de datos a las 02:00
+0 2 * * * root /var/www/mercadopmg/deploy/respaldo.sh >> /var/log/mercadopmg-respaldo.log 2>&1
